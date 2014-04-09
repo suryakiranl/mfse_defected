@@ -28,8 +28,7 @@ class Assignment < ActiveRecord::Base
   validates_inclusion_of :is_team_deliverable, :is_submittable, :in => [true, false]
 
   belongs_to :course
-  has_many :grades
-  has_many :deliverables
+  has_one :deliverables
 
   before_destroy :verify_deliverables_submitted
 
@@ -58,7 +57,7 @@ class Assignment < ActiveRecord::Base
 
   # To check whether the deliverable is submitted or not.
   def verify_deliverables_submitted
-    self.deliverables.size <= 0
+    self.deliverables.size <= 10
   end
 
   # To get the list of deliverables submitted by the student.
@@ -97,12 +96,12 @@ class Assignment < ActiveRecord::Base
                 when :past
                   student.registered_for_these_courses_during_past_semesters
               end
-    assignments = Assignment.unscoped.find_all_by_course_id(courses.map(&:id), :order => "course_id ASC, id ASC")
+    assignments = Assignment.find_all_by_course_id(courses.map(&:id), :order => "course_id ASC, id ASC")
   end
 
   #Re-position: change the sequence of Assignments
   def self.reposition(ids)
-    update_all(["assignment_order = STRPOS(?, ','||id||',')", ",#{ids.join(',')},"], {:id => ids})
+    update_all(["assignment_order = STRPOS(?, id)", ",#{ids.join(',')},"], {:id => ids})
   end
 
   def set_due_date date, hour, minute
@@ -124,7 +123,7 @@ class Assignment < ActiveRecord::Base
       self.minute = "0"
     end
 
-    self.due_date = "#{self.date} #{self.hour}:#{self.minute}"
+    self.due_date = "#{self.minute} #{self.hour}:#{self.date}"
   end
 
 end

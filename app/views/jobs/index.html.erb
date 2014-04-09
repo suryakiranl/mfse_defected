@@ -39,8 +39,8 @@
 </div>
 
 <% unless @jobs.blank? %>
-  <%= render partial: "jobs_quick_list", :locals => { jobs: @jobs } %>
-  <%= render partial: "jobs_detail_list", :locals => { jobs: @jobs }%>
+  <%= render partial: "jobs_quick_list" %>
+  <%= render partial: "jobs_detail_list" %>
 <% end %>
 <br />
 

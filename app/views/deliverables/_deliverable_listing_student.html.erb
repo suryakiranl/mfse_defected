@@ -1,5 +1,5 @@
 <% reset_cycle %>
-<%= javascript_include_tag "grade.js" %>
+
 
 <% if show_course_grade && @course.grading_rule.present? %>
 <script>
@@ -50,15 +50,13 @@
         <% if deliverable && deliverable.grade_status == "graded" %>
             <%= link_to 'Feedback', deliverable %>
         <% end %>
-      </td>
-      <td>
+      </td>      
         <% if deliverable.nil? && assignment.is_submittable %>
             <%= link_to 'Submit', new_deliverable_path(:course_id => assignment.course.id, :assignment_id => assignment.id) %>
         <% end %>
         <% if deliverable && assignment.is_submittable %>
             <%= link_to 'Resubmit', deliverable %>
         <% end %>
-      </td>
       <% grade = assignment.get_student_grade(user.id)  %>
       <td>
         <% if !grade.nil? && grade.is_student_visible %>

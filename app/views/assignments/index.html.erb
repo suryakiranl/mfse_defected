@@ -18,11 +18,11 @@
 </script>
 
 <h1><%= link_to @course.display_for_course_page, course_path(@course), :class => "course" %></h1>
-<%=  render :partial=>"layouts/grade_book_sub_menu" %>
+<%=  render :partial=>"layouts/grade_book_menu" %>
 <% customised_name = nomenclature_assignment_or_deliverable %>
 <h2>Listing <%= customised_name %></h2>
 <%= link_to "New #{customised_name}", new_course_assignment_path %> &nbsp; &nbsp;
-<%= link_to "Reorder #{customised_name}s", assignments_show_path %>
+<%= link_to "Reorder #{customised_name}s", courses_show_path %>
 
 <% unless @assignments.empty? %>
 <table class='cmu_table'>

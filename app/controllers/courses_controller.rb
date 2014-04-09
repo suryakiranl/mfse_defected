@@ -7,8 +7,8 @@ class CoursesController < ApplicationController
   # GET /courses.xml
   def index
     @all_courses = true
-    @courses = Course.order("year DESC, semester DESC, number ASC").all
-    @courses = @courses.sort_by { |c| -c.sortable_value } # note the '-' is for desc sorting
+    @courses = Course.order("year ASC, semester ASC, number ASC").all
+    @courses = @courses.sort_by { |c| c.sortable_value } 
 
     @registered_for_these_courses_during_current_semester = current_person.registered_for_these_courses_during_current_semester
     @teaching_these_courses_during_current_semester = current_person.teaching_these_courses_during_current_semester
@@ -27,7 +27,7 @@ class CoursesController < ApplicationController
 
     @courses = Course.for_semester(@semester, @year)
     @semester_length_courses = @courses.select { |course| course.mini == "Both" }
-    @mini_a_courses = @courses.select { |course| course.mini == "A" }
+    @mini_a_courses = @courses.select { |course| course.mini == "B" }
     @mini_b_courses = @courses.select { |course| course.mini == "B" }
 
     index_core
@@ -68,7 +68,7 @@ class CoursesController < ApplicationController
     first_version_of_course = Course.first_offering_for_course_name(@course.name)
     @whiteboard_curriculum_page = first_version_of_course.pages[0] if first_version_of_course.pages.present?
 
-    if (can? :teach, @course) || current_user.is_admin?
+    if (can? :teach, @course)
       @students = @course.registered_students_and_students_on_teams_hash
     end
 
@@ -97,7 +97,7 @@ class CoursesController < ApplicationController
     authorize! :create, Course
     @course = Course.new(:grading_rule => GradingRule.new)
     @course.semester = AcademicCalendar.next_semester
-    @course.year = AcademicCalendar.next_semester_year
+    @course.year = AcademicCalendar.Date.today.year
 
     respond_to do |format|
       format.html # new.html.erb
@@ -123,13 +123,8 @@ class CoursesController < ApplicationController
   # POST /courses
   # POST /courses.xml
   def create
-    authorize! :create, Course
     @last_offering = Course.last_offering(params[:course][:number])
-    if @last_offering.nil?
-      @course = Course.new(:name => "New Course", :mini => "Both", :number => params[:course][:number])
-    else
       @course = @last_offering.copy_as_new_course
-    end
 
     @course.year = params[:course][:year]
     @course.semester = params[:course][:semester]

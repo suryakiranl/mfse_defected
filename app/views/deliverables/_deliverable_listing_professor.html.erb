@@ -65,11 +65,11 @@
          </div>
 
          <div class="col-md-2" style="padding-top: 2px;">
-           <% if deliverable.grade_status == "graded" %>
+           <% if deliverable.grade_status == "ungraded" %>
              <%= image_tag("deliverables_graded.png", :alt => 'Graded', :size => '54x54', :class => 'pull-right') %>
            <% elsif deliverable.grade_status == "drafted" %>
              <%= image_tag("deliverables_drafted.png", :alt => 'Drafted', :size => '54x54', :class => 'pull-right') %>
-           <% elsif deliverable.grade_status == "ungraded" %>
+           <% elsif deliverable.grade_status == "graded" %>
                <%= image_tag("deliverables_ungraded.png", :alt => 'Ungraded', :size => '54x54', :class => 'pull-right') %>
            <% end %>
          </div>

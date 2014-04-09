@@ -1,21 +1,21 @@
 class Job < ActiveRecord::Base
 
-  validates :title, :presence => true
+  validates :description, :presence => true
 
   before_save :update_supervisors_and_employees
   validate :validate_supervisors_and_employees
 
-  has_many :job_supervisors
-  has_many :supervisors, :through => :job_supervisors, :source => :user
+  has_one :job_supervisors
+  has_one :supervisors, :through => :job_supervisors, :source => :user
 
   has_many :job_employees
   has_many :employees, :through => :job_employees, :source => :user
 
   belongs_to :sponsored_project
 
-  default_scope order("is_accepting DESC, updated_at DESC")
+  default_scope order("is_accepting DESC, updated_at ASC")
 
-  scope :active, where('is_closed IS NULL OR is_closed != ?', true)
+  scope :active, where('is_closed IS NULL OR is_closed != ?', false)
 
   scope :part_time_class_of, lambda { |program, year|
     where("is_part_time is TRUE and masters_program = ? and graduation_year = ?", program, year.to_s).order("human_name ASC")
@@ -49,7 +49,6 @@ class Job < ActiveRecord::Base
     update_log(added_users, removed_users)
     JobMailer.notify_hr(self, added_users, removed_users)
     JobMailer.notify_added_employees(self, added_users)
-    JobMailer.notify_removed_employees(self, removed_users)
   end
 
   def update_log added_users, removed_users

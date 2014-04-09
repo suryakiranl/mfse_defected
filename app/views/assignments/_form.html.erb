@@ -58,7 +58,7 @@
 
   });
 <% end %>
-<%= form_for([@course,@assignment]) do |f| %>
+<%= form_for(@course,@assignment) do |f| %>
 
   <% if @assignment.errors.any? %>
   <div id="error_explanation">

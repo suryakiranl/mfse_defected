@@ -9,7 +9,7 @@
 <% if @user.id == current_user.id  %>
     <h2>Your <%= nomenclature_assignment_or_deliverable %>s</h2>
 <% else %>
-    <h2><%= nomenclature_assignment_or_deliverable %>s for <%= @user.human_name %></h2>
+    <h2><%= nomenclature_assignment_or_deliverable %>s for <%= @user %></h2>
 <% end %>
 <br/>
     <%= render :partial => "deliverables/deliverable_listing_student", :locals => {:assignments => @assignments, :show_course_grade => true, :skip_course_column => true, :courses => [@course], :user => @user} %>

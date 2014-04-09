@@ -44,15 +44,13 @@ class JobMailer < ActionMailer::Base
 
   def notify_added_employees(job, added_people)
     @job = job
-    if added_people.present?
-      added_people.each do |user|
-        options = {:to => user.email,
-                   :cc => job.supervisors.collect { |user| user.email },
-                   :subject => "GA Jobs - you've been added to " + job.title,
-                   :date => Time.now,
-        }
-        mail(options).deliver
-      end
+    added_people.each do |user|
+      options = {:to => user.email,
+                 :cc => job.supervisors.collect { |user| user.email },
+                 :subject => "GA Jobs - you've been added to " + job.title,
+                 :date => Time.now,
+      }
+      mail(options).deliver
     end
 
   end

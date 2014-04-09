@@ -2,7 +2,7 @@ class DeliverablesController < ApplicationController
 
   layout 'cmu_sv'
 
-  before_filter :authenticate_user!
+  
   before_filter :render_grade_book_menu, :only => [:grading_queue_for_course, :show]
 
   def render_grade_book_menu
@@ -28,17 +28,16 @@ class DeliverablesController < ApplicationController
     end
 
     # Retrieving assignments names for the course to be able to filter by deliverable name later on.
-    @assignments = Assignment.where(:course_id => @course.id).all
+    # @assignments = Assignment.where(:course_id => @course.id).all
     # Team Turing: this fails when the task is nil.
-    # @assignments = Assignment.where(:course_id => @course.id).all.sort_by(&:task_number)
+    @assignments = Assignment.where(:course_id => @course.id).all.sort_by(&:task_number)
 
 
     if @course.faculty.include?(current_user)
       # Get all deliverables for this team/student
       @deliverables = Deliverable.get_deliverables(params[:course_id], current_user.id, {:is_my_team => 1})
 
-      @deliverables = @deliverables.select { |deliverable| deliverable.grade_status == "ungraded" ||
-          deliverable.grade_status == "drafted" }
+      @deliverables = @deliverables.select { |deliverable| deliverable.grade_status == "ungraded" }
 
       @deliverables = @deliverables.sort { |a, b| b.assignment.assignment_order <=> a.assignment.assignment_order }
     else

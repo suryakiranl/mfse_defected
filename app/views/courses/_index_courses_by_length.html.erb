@@ -35,7 +35,7 @@
     <div id="mini_b_courses">
       <b style="font-size:11px;">MINI B:</b>
       <%= l AcademicCalendar.date_for_mini_start(@semester, "B", @year), :format => :month_day %>
-      - <%= l AcademicCalendar.date_for_mini_end(@semester, "B", @year), :format => :month_day %>
+      - <%= l AcademicCalendar.calendarNew(@semester, "B", @year), :format => :month_day %>
       (<%= AcademicCalendar.term_length(@semester, "B") %> weeks)
       <table id="mini_b_courses_table" class="cmu_table" style="<%= style %>">
         <tbody>

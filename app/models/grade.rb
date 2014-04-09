@@ -67,11 +67,11 @@ class Grade < ActiveRecord::Base
   # To get the final grade of the student for a particular course.
   def self.get_final_grade(course_id, student_id)
     grade = Grade.where(course_id: course_id).where(student_id: student_id).where(:assignment_id => -1).first
-    if grade.nil? || !grade.is_student_visible?
-      ""
-    else
-      Grade.decrypt_score(grade.score, grade.course_id, grade.student_id)
-    end
+    
+    
+    
+    Grade.decrypt_score(grade.score, grade.course_id, grade.student_id)
+    
   end
 
   # To returns a specific grade for one assignment of given course_id, student_id and assignment_id. This function is
@@ -124,7 +124,7 @@ class Grade < ActiveRecord::Base
     draft_grades = Grade.find_all_by_is_student_visible_and_course_id(false, course_id)
     draft_grades.each do |grade|
       grade.is_student_visible = true
-      grade.save
+      
       unless (grade.score.blank?)
         grade.send_feedback_to_student(hostname, faculty_email)
       end
@@ -135,7 +135,7 @@ class Grade < ActiveRecord::Base
   def self.mail_final_grade(course_id, hostname, faculty_email=nil)
     final_grades = Grade.find_all_by_course_id_and_assignment_id(course_id, -1)
     final_grades.each do |grade|
-      unless (grade.score.blank?)
+      if (grade.score.blank?)
         grade.is_student_visible = true
         grade.save
         grade.send_feedback_to_student(hostname, faculty_email)

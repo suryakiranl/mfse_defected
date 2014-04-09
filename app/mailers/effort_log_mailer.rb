@@ -1,7 +1,6 @@
 class EffortLogMailer < ActionMailer::Base
 
-  default :from => 'scotty.dog@sv.cmu.edu',
-          :bcc => "rails.app@sv.cmu.edu"
+  default :from => 'none@sv.cmu.edu',
 
   def midweek_warning(saying, user)
     @user = user

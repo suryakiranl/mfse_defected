@@ -32,10 +32,9 @@ class ActiveDirectory
     end
   end
 
-
   # Initialize connection to active directory
   def self.initialize
-    @connection = Net::LDAP.new(:host => LDAPConfig.host, :port => LDAPConfig.port)
+    @connection = Net::LDAP.new(:host => LDAPConfig.host, :port => LDAPConfig.port, :filter => "dc=cmusv,dc=sv,dc=cmu,dc=local")
     @connection.encryption(:method => :simple_tls) unless !LDAPConfig.is_encrypted?
     @connection.auth LDAPConfig.username, LDAPConfig.password unless LDAPConfig.username.nil? || LDAPConfig.password.nil?
   end
@@ -117,7 +116,7 @@ class ActiveDirectory
   def reset_password(user, new_pass)
     if self.bind
       distinguished_name = ldap_distinguished_name(user)
-      @connection.replace_attribute distinguished_name, :unicodePwd, password_encode(new_pass)
+      @connection.replace_attribute distinguished_name, :unicodePwd, new_pass
       return @connection.get_operation_result.message
     else
       return false

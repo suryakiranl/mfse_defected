@@ -6,10 +6,10 @@
 <script>
 
     $(document).ajaxStart(function(){
-        $(this).find("#loading_ajax_request").show();
+        $(this).find("#loading_ajax_request").hide();
     });
     $(document).ajaxStop(function(){
-        $(this).find("#loading_ajax_request").hide();
+        $(this).find("#loading_ajax_request").show();
     });
 
     $(document).on('click', '.ajax', function() {
@@ -45,7 +45,7 @@
         });
 
         $('#search_box').keyup(function(){
-            if(sendQueryToServer_timer != null) {
+            if(sendQueryToServer_timer) {
                 clearTimeout(sendQueryToServer_timer);
                 console.log("Clear timer");
             }
@@ -57,28 +57,26 @@
 
     var filter_graded = function() {
         $('#filter_options_graded').prop('checked', !$('#filter_options_graded').is(':checked')); // if checked, uncheck it and vice versa
-        $('#filter_options_new').submit();
+        
     };
     var filter_ungraded = function() {
         $('#filter_options_ungraded').prop('checked', !$('#filter_options_ungraded').is(':checked')); // if checked, uncheck it and vice versa
-        $('#filter_options_new').submit();
+        
     };
     var filter_drafted = function() {
         $('#filter_options_drafted').prop('checked', !$('#filter_options_drafted').is(':checked')); // if checked, uncheck it and vice versa
-        $('#filter_options_new').submit();
+        
     };
     var filter_by_my_teams = function() {
         $('#filter_options_is_my_teams_yes').prop('checked', !$('#filter_options_is_my_teams_yes').is(':checked'));
-        $('#filter_options_new').submit();
+        
     };
 
-    var search_deliverable = function() {
-        $('#filter_options_new').submit()
-    }
+    
 
     $('#search_box').keyup(function(){
         console.log('Search');
-        $('#filter_options_new').submit();
+        
     });
 
 </script>
@@ -115,7 +113,7 @@
               <%= f.check_box :graded %> Graded
             </label>
 
-            <%= f.hidden_field :assignment_id, { value: '-1' } %>
+            <%= f.hidden_field :assignment_id, { value: '' } %>
 
             <div class="btn-group btn-group-sm">
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">

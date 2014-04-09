@@ -16,7 +16,7 @@
                 update:function () {
                     $.ajax({
                         type:'post',
-                        data:$('#sortable').sortable('serialize') + '&id=<%=@course.id-%>',
+                        data:$('#sortable').sortable('serialize') + '&id=<%=@course.id%>',
                         dataType:'script',
                         //beforeSend is needed for devise 1.4.5 and rails 3.0.9
                         //http://stackoverflow.com/questions/7393871/devise-not-setting-current-user-on-ajax-post-even-though-correct-x-csrf-token-is

@@ -5,8 +5,7 @@ class JobsController < ApplicationController
 
   # GET /jobs
   def index
-    @jobs = Job.scoped
-    @jobs = @jobs.active if params[:show_all] != "true"
+    @jobs = Job.scoped.active
   end
 
   # GET /jobs/new
@@ -26,7 +25,6 @@ class JobsController < ApplicationController
 
   # POST /jobs
   def create
-    authorize! :create, Job
     params[:job][:supervisors_override] = params[:supervisors]
     params[:job][:employees_override] = params[:students]
     @job = Job.new(params[:job])
@@ -48,13 +46,10 @@ class JobsController < ApplicationController
     params[:job][:employees_override] = params[:students]
     @job = Job.find(params[:id])
     authorize! :update, @job
-    if  params[:job][:is_closed].present? && params[:job][:is_closed] == "true"
-      notice_msg = "Job was closed."
-    end
     @projects = SponsoredProject.current
 
     respond_to do |format|
-      if @job.update_attributes(params[:job])
+      if @job.present?
         format.html { redirect_to(jobs_path, :notice => notice_msg || 'Job was successfully updated.') }
       else
         format.html { render :action => "edit" }

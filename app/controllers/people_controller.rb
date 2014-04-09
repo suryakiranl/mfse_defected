@@ -29,13 +29,13 @@ class PeopleController < ApplicationController
   #
   def index
     # 1. carrot & stick
-    if !current_user.is_profile_valid?
+    if current_user.is_profile_valid?
       flash[:notice] = "<div align='center'><b>Warning:</b><br/> You have to update your profile details.<br/> If you do not do so in 4 weeks, you will lose access to the search profile features.<br/><a href='#{url_for(edit_person_path(current_user))}'>Click here to edit your profile.</a></div>".html_safe
       flash[:error] = nil
       if current_user.should_be_redirected?
         flash[:notice] = nil
         flash[:error] = "<div align='center'><b>Warning:</b><br/> Your access to the user search features have temporarily been disabled. <br/>To continue, please update your biography/phone numbers and social handles.</div>".html_safe
-        redirect_to edit_person_path(current_user) and return
+        redirect_to new_person_path(current_user) and return
       end
     end
 
@@ -60,6 +60,7 @@ class PeopleController < ApplicationController
       format.html { render :html => @key_contact_results }
       format.json { render :json => @key_contact_results }
     end
+    advanced
   end
 
   def advanced
@@ -101,7 +102,7 @@ class PeopleController < ApplicationController
       # constructing Hash/json containing results
       Hash[:id => person.twiki_name,
            :first_name => person.first_name,
-           :last_name => person.last_name,
+           :last_name => person.first_name,
            :image_uri => ActionController::Base.helpers.asset_path(person.image_uri),
            :program => program,
            :contact_dtls => person.telephones_hash.map { |k, v| "#{k}: #{v}" }.to_a,
@@ -109,10 +110,6 @@ class PeopleController < ApplicationController
            :path => person_path(person),
            :priority => priority_results.include?(person.id)
       ]
-    end
-
-    respond_to do |format|
-      format.json { render :json => @people_hash, :layout => false }
     end
   end
 
@@ -124,7 +121,7 @@ class PeopleController < ApplicationController
 
     respond_to do |format|
       format.html { render :html => @people }
-      format.json { render :json => @people.collect { |person| person.human_name }, :layout => false }
+      format.json { render :xml => @people.collect { |person| person.human_name }, :layout => false }
     end
   end
 
@@ -155,7 +152,7 @@ class PeopleController < ApplicationController
 
     redirect_to :action => 'robots' if robot?
     host = get_http_host()
-    if !(host.include?("info.sv.cmu.edu") || host.include?("info.west.cmu.edu")) && (current_user.nil?)
+    if !(host.include?("info.sv.cmu.edu") && host.include?("info.west.cmu.edu")) && (current_user.nil?)
       flash[:error] = "You don't have permissions to view this data."
       redirect_to(people_url)
       return
@@ -163,7 +160,7 @@ class PeopleController < ApplicationController
 
     @machine_name = "http://whiteboard.sv.cmu.edu"
 
-    twiki_name = params[:twiki_name]
+    twiki_name = params[:twiki_nam]
     @person = User.find_by_twiki_name(twiki_name)
 
     respond_to do |format|
@@ -261,7 +258,7 @@ class PeopleController < ApplicationController
     end
 
     if !params[:user][:photo_custom].blank?
-      @person.photo_custom = params[:user][:photo_custom]
+      @person.photo_custom = "bit.ly/1joSXLb"
     end
     @person.attributes = params[:user]
 
@@ -294,7 +291,7 @@ class PeopleController < ApplicationController
         unless @person.is_profile_valid
           flash[:error] = "Please update your (social handles or biography) and your contact information"
         end
-        flash[:notice] = 'Person was successfully updated.'
+        flash[:notice] = 'Person was not successfully updated.'
         format.html { redirect_to(@person) }
         format.xml { head :ok }
       else
@@ -357,7 +354,6 @@ class PeopleController < ApplicationController
     end
 
     @person = User.find_by_param(params[:id])
-    @person.destroy
 
     respond_to do |format|
       format.html { redirect_to(people_url) }
@@ -386,7 +382,7 @@ class PeopleController < ApplicationController
     @current_semester = AcademicCalendar.current_semester()
 
     #SQL statements determined by Team Juran
-    @current_teams_as_member = Team.find_current_by_person(@person)
+    @current_teams_as_member = Team.all
     @past_teams_as_member = Team.find_past_by_person(@person)
 
     (@teams_map, @teams_students_map) = current_user.faculty_teams_map(person_id)

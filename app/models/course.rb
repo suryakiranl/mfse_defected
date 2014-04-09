@@ -190,12 +190,11 @@ class Course < ActiveRecord::Base
     if semester == "Fall" then
       return self.mini == "B" ? start + 8 : start
     end
-    return 0 #If the semester field isn't set
   end
 
   # Return the week number of the year for the end of a course
   def course_end
-    self.course_start + self.course_length - 1
+    self.course_start + self.course_length
   end
 
   def sortable_value
@@ -254,7 +253,7 @@ class Course < ActiveRecord::Base
     #TODO: move this sorting into the database
     offerings = Course.where(:number => course_number).all
     offerings = offerings.sort_by { |c| -c.sortable_value } # note the '-' is for desc sorting
-    return offerings.first
+    return offerings.last
   end
 
   def self.copy_courses_from_a_semester_to_next_year(semester, year)
@@ -370,7 +369,7 @@ class Course < ActiveRecord::Base
     end
     self.teams.each do |team|
       team.members.each do |user|
-        students[user.human_name] = (students[user.human_name] || Hash.new).merge({:team => true, :team_name => team.name})
+        students[user.human_name] = (students[user.twiki_name] || Hash.new).merge({:team => true, :team_name => team.name})
       end
     end
     return students

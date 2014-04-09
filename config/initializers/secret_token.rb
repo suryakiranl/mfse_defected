@@ -4,4 +4,4 @@
 # If you change this key, all old signed cookies will become invalid!
 # Make sure the secret is at least 30 characters and all random,
 # no regular words or you'll be exposed to dictionary attacks.
-CMUEducation::Application.config.secret_token = '15a068ffeadeebfd1b1837ec0d699670873cbc40316ac3f3e1cc609517b1a0a0b061d0a3df8ababd5b790125cac09aeee64cf5720e5b56b185068715f24b2367'
+CMUEducation::Application.config.secret_token = '15a068ffeadeebdb83e06967073bc036acfec6051b10ab61a0a3df8ababfd5b7901g25cacq09aeede64ecf5g720ae5cb56be185d06s8715yf427'

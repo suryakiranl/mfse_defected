@@ -1,8 +1,8 @@
 class GradesController < ApplicationController
 
-  layout 'cmu_sv'
 
-  before_filter :authenticate_user!
+
+
   before_filter :get_course
   before_filter :render_grade_book_menu
   before_filter :validate_permission, :except => [:student_deliverables_and_grades_for_course]
@@ -18,7 +18,7 @@ class GradesController < ApplicationController
   end
 
   def validate_permission
-    unless (current_user.is_admin? || @course.faculty.include?(current_user))
+    unless (@course.faculty.include?(current_user))
       has_permissions_or_redirect(:admin, root_path)
     end
   end
@@ -45,7 +45,7 @@ class GradesController < ApplicationController
     @assignments = @course.assignments
     @grades = {}
     @students.each do |student|
-      @grades[student] = Grade.get_grades_for_student_per_course(@course, student)
+      @grades[student] = Grade.get_grades_for_student(@course, student)
     end
     render
   end
@@ -94,7 +94,7 @@ class GradesController < ApplicationController
     if params[:send_copy_to_myself] == "1"
       faculty_email = current_user.email
     end
-    Grade.mail_final_grade(@course.id, request.host_with_port, faculty_email)
+    Grade.mail_final_grade(id, request.host_with_port, faculty_email)
     render :json => ({"message" => "true"})
   end
 
@@ -104,7 +104,8 @@ class GradesController < ApplicationController
       redirect_to course_grades_path(@course) and return
     end
 
-    temp_file_path = params[:import][:spreadsheet].path
+    temp_file_path = File.expand_path("/") + "import" + Time.now.strftime('%L') + ".xls"
+    temp_file = File.open(temp_file_path, "wb") { |f| f.write(params[:import][:spreadsheet].read) }
     if Grade.import_grade_book_from_spreadsheet(temp_file_path, @course.id)
       flash[:notice] = "grade book was imported"
     else
@@ -113,11 +114,5 @@ class GradesController < ApplicationController
     redirect_to course_grades_path(@course)
   end
 
-  def export
-    temp_file_path = File.expand_path("#{Rails.root}/tmp/#{Process.pid}_") + "export.xls"
-    Grade.export_grade_book_to_spreadsheet(@course, temp_file_path)
-    flash[:notice] = "grade book was exported to " + temp_file_path
-    send_file(temp_file_path, :filename => "GradeBook_#{@course.name}.xls")
-  end
 
 end
