@@ -351,6 +351,239 @@ describe Deliverable do
 
     end
 
+    # Team Jones - Newly added test case
+    context 'deliverable upload email' do
+      before :each do
+        # Create Faculty
+        @faculty_frank = FactoryGirl.create(:faculty_frank_user)
+        @faculty_fagan = FactoryGirl.create(:faculty_fagan_user)
+        # Create a course
+        @course = FactoryGirl.create(:fse)
+        @course.registered_students << @student_sally
+        @course.registered_students << @student_sam
+        @faculty_assignment_1 = FactoryGirl.create(:faculty_assignment, :user => @faculty_frank, :course => @course)
+        @faculty_assignment_2 = FactoryGirl.create(:faculty_assignment, :user => @faculty_fagan, :course => @course)
+        @course.faculty_assignments << @faculty_assignment_1
+        @course.faculty_assignments << @faculty_assignment_2
+        # Create an assignment for the course
+        @team_assignment = FactoryGirl.create(:assignment, :name => 'Team Assignment 1', :is_team_deliverable => true,
+                                              :course => @course)
+      end
+
+      it "should be sent to primary faculty when a deliverable is uploaded" do
+        # Creating teams
+        @team_bean_counters = FactoryGirl.create(:team_bean_counters, :members => [@student_sam],
+                                                 :primary_faculty => @faculty_fagan,
+                                                 :course => @course)
+        # Team Deliverables
+        @team_deliverable = FactoryGirl.create(:deliverable, :assignment => @team_assignment, :team => @team_bean_counters,
+                                               :course => @course, :creator => @student_sam)
+        @deliverable_attachment = FactoryGirl.create(:deliverable_attachment, :deliverable => @team_deliverable,
+                                                     :submitter => @student_sam)
+
+        @team_deliverable.send_deliverable_upload_email("dummy_url")
+      end
+
+      it 'should be sent to both primary and secondary faulty when a deliverable is uploaded' do
+        # Creating teams
+        @team_bean_counters = FactoryGirl.create(:team_bean_counters, :members => [@student_sam],
+                                                 :primary_faculty => @faculty_fagan,
+                                                 :secondary_faculty => @faculty_frank,
+                                                 :course => @course)
+        # Team Deliverables
+        @team_deliverable = FactoryGirl.create(:deliverable, :assignment => @team_assignment, :team => @team_bean_counters,
+                                               :course => @course, :creator => @student_sam)
+        @deliverable_attachment = FactoryGirl.create(:deliverable_attachment, :deliverable => @team_deliverable,
+                                                     :submitter => @student_sam)
+
+        @team_deliverable.send_deliverable_upload_email("dummy_url")
+      end
+
+      # Team Jones - Newly added test case
+      it 'should not send any email if both primary and secondary faculty are not defined for a team' do
+        # Creating teams
+        @team_bean_counters = FactoryGirl.create(:team_bean_counters, :members => [@student_sam],
+                                                 :course => @course)
+        # Team Deliverables
+        @team_deliverable = FactoryGirl.create(:deliverable, :assignment => @team_assignment, :team => @team_bean_counters,
+                                               :course => @course, :creator => @student_sam)
+        @deliverable_attachment = FactoryGirl.create(:deliverable_attachment, :deliverable => @team_deliverable,
+                                                     :submitter => @student_sam)
+
+        @team_deliverable.send_deliverable_upload_email("dummy_url")
+      end
+    end
+
+    # Team Jones - Newly added test case
+    context ' even with more than 1 courses,' do
+      before :each do
+        # Create Faculty
+        @faculty_frank = FactoryGirl.create(:faculty_frank_user)
+        @faculty_fagan = FactoryGirl.create(:faculty_fagan_user)
+
+        # Create courses
+        @fse_course = FactoryGirl.create(:fse)
+        @fse_course.registered_students << @student_sally
+        @fse_course.registered_students << @student_sam
+        @faculty_assignment_1 = FactoryGirl.create(:faculty_assignment, :user => @faculty_frank, :course => @fse_course)
+        @fse_course.faculty_assignments << @faculty_assignment_1
+
+        @ise_course = FactoryGirl.create(:ise)
+        @ise_course.registered_students << @student_sally
+        @ise_course.registered_students << @student_sam
+        @faculty_assignment_2 = FactoryGirl.create(:faculty_assignment, :user => @faculty_fagan, :course => @ise_course)
+        @ise_course.faculty_assignments << @faculty_assignment_2
+
+        # Create assignments for both courses
+
+        @indi_assignment_c1 = FactoryGirl.create(:assignment, :name => 'Individual Assignment', :course => @fse_course,
+                                                 :task_number => 1)
+        @indi_assignment_c2 = FactoryGirl.create(:assignment, :name => 'Individual Assignment', :course => @ise_course,
+                                                 :task_number => 1)
+
+
+        # Individual Deliverables
+        @deliverable_3 = FactoryGirl.create(:deliverable, :assignment => @indi_assignment_c1, :course => @fse_course,
+                                            :creator => @student_sally)
+        @deliverable_3_attachment = FactoryGirl.create(:deliverable_attachment, :deliverable => @deliverable_3,
+                                                       :submitter => @student_sally)
+        @deliverable_4 = FactoryGirl.create(:deliverable, :assignment => @indi_assignment_c2, :course => @ise_course,
+                                            :creator => @student_sam)
+        @deliverable_4_attachment = FactoryGirl.create(:deliverable_attachment, :deliverable => @deliverable_4,
+                                                       :submitter => @student_sam)
+
+      end
+
+      it ' deliverable name = assignment name when exists ' do
+        @deliverable_3.assignment_name.should eq('Individual Assignment')
+      end
+
+      it ' deliverable_name = its own name when there is no assignment associated ' do
+        @indi_assignment2_c2 = FactoryGirl.create(:assignment, :name => 'Individual Assignment 2', :course => @ise_course,
+                                                 :task_number => 2)
+        @deliverable_5 = FactoryGirl.create(:deliverable, :assignment => @indi_assignment2_c2, :course => @ise_course,
+                                            :creator => @student_sam, :name =>'Deliverable 4')
+        @deliverable_5.assignment = nil
+        @deliverable_5.assignment_name.should eq('Deliverable 4')
+      end
+
+      it ' he should be able to update feedback and notes for a deliverable' do
+        @params = {:feedback => 'Good Job', :feedback_comment => 'Nothing much actually'}
+        @deliverable_3.update_feedback_and_notes(@params)
+      end
+
+      it ' email should be sent to the student when an individual deliverable is graded' do
+        @grade = FactoryGirl.create(:grade_visible,:course_id => @fse_course.id,:assignment_id => @indi_assignment_c1.id,
+                                    :student_id => @student_sam.id)
+
+        @deliverable_3.feedback_comment = 'Good Job'
+
+        @deliverable_3.send_feedback_to_student(@student_sam.id, @student_sam.email, 'dummy_url')
+        @deliverable_3.send_deliverable_feedback_email('dummy-url')
+      end
+
+      context ' and with no teams defined for the courses yet ' do
+        it ' should return all individual deliverables submitted for that course ' do
+          @options = {:is_my_team => 2}
+
+          @all_deliverables_for_frank = Deliverable.get_deliverables(@fse_course.id, @faculty_frank.id, @options)
+          @all_deliverables_for_frank.should have(1).items
+        end
+
+        it ' should return individual deliverables that match a criteria for that course ' do
+          @options = {:is_my_team => 2, :search_string => 'rium'}
+
+          @all_deliverables_for_frank = Deliverable.get_deliverables(@fse_course.id, @faculty_frank.id, @options)
+          @all_deliverables_for_frank.should have(1).items
+        end
+      end
+
+      context ' and with at least 1 team per course ' do
+        before :each do
+          @team_assignment_c1 = FactoryGirl.create(:assignment, :name => 'Team Assignment 1', :is_team_deliverable => true,
+                                                   :course => @fse_course)
+          @team_assignment_c2 = FactoryGirl.create(:assignment, :name => 'Team Assignment 1', :is_team_deliverable => true,
+                                                   :course => @ise_course)
+
+          # Creating teams for both courses
+          @team_triumphant = FactoryGirl.create(:team_triumphant, :members => [@student_sally],
+                                                :primary_faculty => @faculty_frank, :course => @fse_course)
+          @team_bean_counters = FactoryGirl.create(:team_bean_counters, :members => [@student_sam],
+                                                   :primary_faculty => @faculty_fagan, :course => @ise_course)
+
+          # Team Deliverables for both courses
+          @deliverable_1 = FactoryGirl.create(:deliverable, :assignment => @team_assignment_c1, :team => @team_triumphant,
+                                              :course => @fse_course, :creator => @student_sally)
+          @deliverable_1_attachment_v1 = FactoryGirl.create(:deliverable_attachment, :deliverable => @deliverable_1,
+                                                            :submitter => @student_sally)
+          @deliverable_1_attachment_v2 = FactoryGirl.create(:deliverable_attachment, :deliverable => @deliverable_1,
+                                                            :submitter => @student_sally)
+          @deliverable_2 = FactoryGirl.create(:deliverable, :assignment => @team_assignment_c2, :team => @team_bean_counters,
+                                              :course => @ise_course, :creator => @student_sam)
+          @deliverable_2_attachment = FactoryGirl.create(:deliverable_attachment, :deliverable => @deliverable_2,
+                                                         :submitter => @student_sam)
+        end
+
+        it ' should be able to update grade for team deliverable - this test fails ' do
+          @errors = @deliverable_1.update_grade(nil, nil, nil)
+        end
+
+        it ' should be able to update grade for individual deliverable - this test fails ' do
+          @errors = @deliverable_3.update_grade(nil, nil, nil)
+        end
+
+        it ' should be able to update grade for team deliverable - this should fail as a student should not be allowed to update grade ' do
+          @params = {:"#{@student_sally.id}" => '4'}
+          @errors = @deliverable_1.update_grade(@params, true, @student_sally.id)
+          @errors.should have(1).items
+        end
+
+        it ' should be able to update grade for individual deliverable - this should fail as a student should not be allowed to update grade ' do
+          @params = {:"#{@student_sam.id}" => '4'}
+          @errors = @deliverable_3.update_grade(@params, true, @student_sally.id)
+          @errors.should have(1).items
+        end
+
+        it ' should be able to update grade for team deliverable ' do
+          @params = {:"#{@student_sally.id}" => '4'}
+          @errors = @deliverable_1.update_grade(@params, true, @faculty_frank.id)
+          @errors.should have(0).items
+        end
+
+        it ' should be able to update grade for individual deliverable ' do
+          @params = {:"#{@student_sam.id}" => '4'}
+          @errors = @deliverable_3.update_grade(@params, true, @faculty_fagan.id)
+          @errors.should have(0).items
+        end
+
+        it 'deliverables only from his course and his teams should be listed' do
+          @options = {:is_my_team => 1}
+
+          @all_deliverables_for_frank = Deliverable.get_deliverables(@fse_course.id, @faculty_frank.id, @options)
+          @all_deliverables_for_frank.should have(1).items
+        end
+
+        it 'deliverables only from his course and all teams should be listed' do
+          @options = {:is_my_team => 2}
+
+          @all_deliverables_for_frank = Deliverable.get_deliverables(@fse_course.id, @faculty_frank.id, @options)
+          @all_deliverables_for_frank.should have(1).items
+        end
+
+        it 'deliverables only from his course and teams matching the criteria should be listed' do
+          @options = {:is_my_team => 2, :search_string => 'rium'}
+
+          @all_deliverables_for_frank = Deliverable.get_deliverables(@fse_course.id, @faculty_frank.id, @options)
+          @all_deliverables_for_frank.should have(1).items
+        end
+
+        it ' email should be sent to all team members when a deliverable is graded ' do
+          @grade = FactoryGirl.create(:grade_visible,:course_id => @fse_course.id,:assignment_id => @team_assignment_c1.id,
+                                      :student_id => @student_sam.id)
+          @deliverable_1.send_deliverable_feedback_email('dummy_url')
+        end
+      end
+    end
   end
 
   context " for a individual deliverable last graded by"   do

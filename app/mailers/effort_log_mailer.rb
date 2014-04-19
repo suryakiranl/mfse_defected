@@ -1,6 +1,6 @@
 class EffortLogMailer < ActionMailer::Base
 
-  default :from => 'none@sv.cmu.edu',
+  default :from => 'none@sv.cmu.edu'
 
   def midweek_warning(saying, user)
     @user = user
@@ -18,6 +18,3 @@ class EffortLogMailer < ActionMailer::Base
   end
 
 end
-
-
-
